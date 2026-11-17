@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using OrderProcessing.Api.Data;
 using OrderProcessing.Api.Dtos;
 using OrderProcessing.Api.Enums;
-using OrderProcessing.Api.Middleware;
 using OrderProcessing.Api.Models;
 
 namespace OrderProcessing.Api.Services;
@@ -19,14 +18,14 @@ public class OrderService : IOrderService
         // 1. Verify User Exists
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.CustomerEmail);
         if (user == null) 
-            throw new AppExceptionMiddleware("User not found.", HttpStatusCode.NotFound);
+            throw new Exception("User not found.");
 
         // 2. Validate Stock
         var productIds = dto.Items.Select(i => i.ProductId).ToList();
         var products = await _context.Products.Where(p => productIds.Contains(p.Id)).ToListAsync();
 
         if (products.Count != productIds.Count)
-            throw new AppExceptionMiddleware("One or more products do not exist.", HttpStatusCode.BadRequest);;
+            throw new Exception("One or more products do not exist.");
 
         var order = new Order { CustomerId = user.Email };
 
@@ -34,10 +33,10 @@ public class OrderService : IOrderService
         {
             var product = products.First(p => p.Id == item.ProductId);
             if (!product.IsActive) 
-                throw new AppExceptionMiddleware($"Product {product.Name} is inactive.", HttpStatusCode.BadRequest);
+                throw new Exception($"Product {product.Name} is inactive.");
             
             if (product.StockQuantity < item.Quantity) 
-                throw new AppExceptionMiddleware($"Insufficient stock for {product.Name}.", HttpStatusCode.BadRequest);
+                throw new Exception($"Insufficient stock for {product.Name}.");
 
             product.StockQuantity -= item.Quantity;
 

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using OrderProcessing.Api.Data;
-using OrderProcessing.Api.Middleware;
 using OrderProcessing.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,8 +32,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
-
-app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
